@@ -1,7 +1,9 @@
 # Overview of SLURM installation
-* [Slurm users] (#slurm-users)
+
+* [Users] (#Users)
 * [Install Munge] (#install-munge)
-# Slurm users
+
+# Users
 Create a slurm user on *all nodes* of the cluster [1]\
 NOTE: The SlurmUser must exist prior to starting Slurm and must exist on all nodes of the cluster.\
 Synchronize clock on all nodes of the cluster [1]
