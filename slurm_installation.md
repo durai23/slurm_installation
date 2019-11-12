@@ -1,12 +1,18 @@
 # Overview of SLURM installation
 
-* [Users](#Users)
+* [Prerequisites](#Prerequisites)
 * [Install Munge](#install-munge)
 
-# Users
+# Prerequisites
+
+## Clock
+
+Synchronize clock on all nodes of the cluster [1]
+
+## Users
+
 Create a slurm user on *all nodes* of the cluster [1]\
 NOTE: The SlurmUser must exist prior to starting Slurm and must exist on all nodes of the cluster.\
-Synchronize clock on all nodes of the cluster [1]
 Make sure the clocks, users and groups (UIDs and GIDs,_(what is uid, gid?)_) are synchronized across the cluster. [2]
 <pre>groupadd slurm
 useradd -m slurm -g slurm</pre>
@@ -27,23 +33,28 @@ useradd  -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g m
 export SLURMUSER=992
 groupadd -g $SLURMUSER slurm
 useradd  -m -c "SLURM workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm  -s /bin/bash slurm</pre>
+
+## ssh
+
 Set up passwordless ssh between controller and compute nodes.
+
 # Install Munge
+
 Install munge on *all nodes*.\
 <pre>yum install munge munge-libs munge-devel -y</pre>
-Make sure that all nodes in your cluster have the same munge.key. Make sure the MUNGE daemon, munged is started before you start the Slurm daemons.\
+Make sure that all nodes in your cluster have the same munge.key.
 Generate munge key\
 Chown munge key to user munge\
 Chmod munge key to 0400\
 Copy keys to all machines\
-The MUNGE daemon, munged, must also be started before Slurm daemons.\
-
 Assume the munge key is in /etc/munge/munge.key. Now, we SSH into every node and correct the permissions as well as start the Munge service:\
 
 <pre>chown -R munge: /etc/munge/ /var/log/munge/
 chmod 0700 /etc/munge/ /var/log/munge/</pre>
 <pre>systemctl enable munge
 systemctl start munge</pre>
+The MUNGE daemon, munged, must also be started before Slurm daemons.\
+Make sure the MUNGE daemon, munged is started before you start the Slurm daemons.\
 Then you can test munge:\
 
 Install Slurm
