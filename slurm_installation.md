@@ -1,7 +1,7 @@
 # Overview of SLURM installation
 
-* [Users] (#Users)
-* [Install Munge] (#install-munge)
+* [Users](#Users)
+* [Install Munge](#install-munge)
 
 # Users
 Create a slurm user on *all nodes* of the cluster [1]\
