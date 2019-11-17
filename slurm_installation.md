@@ -1,4 +1,4 @@
-# Overview of SLURM installation
+# SLURM installation steps
 
 * [Prerequisites](#Prerequisites)
 * [Install Munge](#install-munge)
@@ -37,30 +37,19 @@ You can install MariaDB to store the accounting that Slurm provides. If you want
 <pre>yum install mariadb-server mariadb-devel -y</pre>
 You can setup MariaDB later. You just need to install it before building the Slurm RPMs.
 
-## Users - cleanup this section
+## Users
 
 Create a slurm user on *all nodes* of the cluster [1]\
 NOTE: The SlurmUser must exist prior to starting Slurm and must exist on all nodes of the cluster.\
-Make sure the clocks, users and groups (UIDs and GIDs,_(what is uid, gid?)_) are synchronized across the cluster. [2]
-<pre>groupadd slurm
-useradd -m slurm -g slurm</pre>
-Another example:\
-Create the users/groups for slurm and munge, for example:
-<pre>export MUNGEUSER=981
-groupadd -g $MUNGEUSER munge
-useradd  -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g munge  -s /sbin/nologin munge
-export SlurmUSER=982
-groupadd -g $SlurmUSER slurm
-useradd  -m -c "Slurm workload manager" -d /var/lib/slurm -u $SlurmUSER -g slurm  -s /bin/bash slurm</pre>
-and make sure that these same users are created identically on all nodes. This must be done prior to installing RPMs (which would create random UID/GID pairs if these users don't exist).\
-Yet another example:\
-For all the nodes, before you install Slurm or Munge:
+Make sure the clocks, users and groups (UIDs and GIDs) are synchronized across the cluster.\
+Create the users/groups for slurm and munge, for example, for *all the nodes* before you install Slurm or Munge:
 <pre>export MUNGEUSER=991
 groupadd -g $MUNGEUSER munge
 useradd  -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g munge  -s /sbin/nologin munge
 export SLURMUSER=992
 groupadd -g $SLURMUSER slurm
 useradd  -m -c "SLURM workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm  -s /bin/bash slurm</pre>
+and make sure that these same users are created identically on all nodes. This must be done prior to installing RPMs (which would create random UID/GID pairs if these users don't exist).\
 
 We recommend that you create a Unix user slurm for use by slurmctld. This user name will also be specified using the SlurmUser in the slurm.conf configuration file. This user must exist on all nodes of the cluster. Note that files and directories used by slurmctld will need to be readable or writable by the user SlurmUser (the Slurm configuration files must be readable; the log file directory and state save directory must be writable).
 
