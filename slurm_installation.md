@@ -128,11 +128,11 @@ scp * root@compute-2:~/
 scp * root@compute-n:~/</pre>
 On every node that you want to be a master and compute node, we install those rpms. In our case, I want every node to be a compute node.
 <pre>yum --nogpgcheck localinstall slurm-15.08.9-1.el7.centos.x86_64.rpm slurm-devel-15.08.9-1.el7.centos.x86_64.rpm slurm-munge-15.08.9-1.el7.centos.x86_64.rpm slurm-perlapi-15.08.9-1.el7.centos.x86_64.rpm slurm-plugins-15.08.9-1.el7.centos.x86_64.rpm slurm-sjobexit-15.08.9-1.el7.centos.x86_64.rpm slurm-sjstat-15.08.9-1.el7.centos.x86_64.rpm slurm-torque-15.08.9-1.el7.centos.x86_64.rpm</pre>
-After we have installed Slurm on every machine, we will configure Slurm properly.\
+After we have installed Slurm on every machine, we will configure Slurm properly.
 
 ## slurm.conf - INCOMPLETE
 
-Build a configuration file using your favorite web browser and doc/html/configurator.html or alternatively http://slurm.schedmd.com/configurator.easy.html\
+Build a configuration file using your favorite web browser and doc/html/configurator.html or alternatively http://slurm.schedmd.com/configurator.easy.html
 OR\
 Visit http://slurm.schedmd.com/configurator.html to make a configuration file for Slurm.
 It is mandatory that slurm.conf is *identical on all nodes*
@@ -151,9 +151,9 @@ After you hit Submit on the form, you will be given the full Slurm configuration
 On the master node:
 <pre>cd /etc/slurm
 vim slurm.conf</pre>
-Copy the form’s Slurm configuration file that was created from the website and paste it into slurm.conf.\
+Copy the form’s Slurm configuration file that was created from the website and paste it into slurm.conf.
 
-Install the configuration file in <sysconfdir>/slurm.conf. Or save the resulting output to /etc/slurm/slurm.conf, or the default location in /usr/local/etc/slurm.conf.\
+Install the configuration file in <sysconfdir>/slurm.conf. Or save the resulting output to /etc/slurm/slurm.conf, or the default location in /usr/local/etc/slurm.conf.
 
 Now that the master node has the slurm.conf correctly, we need to send this file to the other compute nodes.
 <pre>scp slurm.conf root@compute-1:/etc/slurm/slurm.conf
