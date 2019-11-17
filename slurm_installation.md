@@ -3,7 +3,9 @@
 * [Prerequisites](#Prerequisites)
 * [Install Munge](#install-munge)
 
-# Delete failed installation of Slurm
+# Prerequisites
+
+## Delete failed installation of Slurm
 
 I leave this optional step in case you tried to install Slurm, and it didn’t work. We want to uninstall the parts related to Slurm unless you’re using the dependencies for something else.
 
@@ -24,13 +26,18 @@ kill 26278
 userdel -r munge</pre>
 Slurm, Munge, and Mariadb should be adequately wiped. Now, we can start a fresh installation that actually works.
 
-# Prerequisites
-
 ## Clock
 
-Synchronize clock on all nodes of the cluster [1]
+Synchronize clock on all nodes of the cluster.
 
-## Users
+## Install MariaDB
+
+You can install MariaDB to store the accounting that Slurm provides. If you want to store accounting, here’s the time to do so. I only install this on the master node. I use the master node as our SlurmDB node.
+
+<pre>yum install mariadb-server mariadb-devel -y</pre>
+You can setup MariaDB later. You just need to install it before building the Slurm RPMs.
+
+## Users - cleanup this section
 
 Create a slurm user on *all nodes* of the cluster [1]\
 NOTE: The SlurmUser must exist prior to starting Slurm and must exist on all nodes of the cluster.\
@@ -61,24 +68,28 @@ We recommend that you create a Unix user slurm for use by slurmctld. This user n
 
 Set up passwordless ssh between controller and compute nodes.
 
-# Install Mung
+## Install Munge
 
 If you are using CentOS 7, get the latest EPEL repository.
 
 <pre>yum install epel-release</pre>
-
-Install munge on *all nodes*.\
+Install munge on *all nodes*.
 <pre>yum install munge munge-libs munge-devel -y</pre>
-After installing Munge, you need to create a secret key on the Server.
-<write key creation>
-After the secret key is created, you will need to send this key to all of the compute nodes
-scp /etc/munge/munge.key root@compute-1:/etc/munge
+After installing Munge, you need to create a secret key on the master node. First, we install rng-tools to properly create the key.
+<pre>yum install rng-tools -y
+rngd -r /dev/urandom</pre>
+Now, we create the secret key. You only have to do the creation of the secret key on the master node.
+<pre>/usr/sbin/create-munge-key -r</pre>
+<pre>dd if=/dev/urandom bs=1 count=1024 > /etc/munge/munge.key
+chown munge: /etc/munge/munge.key
+chmod 400 /etc/munge/munge.key</pre>
+After the secret key is created, you will need to send this key to all of the compute nodes.
+<pre>scp /etc/munge/munge.key root@compute-1:/etc/munge
 scp /etc/munge/munge.key root@compute-2:/etc/munge
 .
 .
-scp /etc/munge/munge.key root@compute-n:/etc/munge
-
-Now, we SSH into every node and correct the permissions as well as start the Munge service. Chown munge key to user munge. Chmod munge key to 0700.\
+scp /etc/munge/munge.key root@compute-n:/etc/munge</pre>
+Now, we SSH into *every node* and correct the permissions as well as start the Munge service. Chown munge key to user munge. Chmod munge key to 0700.
 <pre>chown -R munge: /etc/munge/ /var/log/munge/
 chmod 0700 /etc/munge/ /var/log/munge/</pre>
 <pre>systemctl enable munge
@@ -86,42 +97,45 @@ systemctl start munge</pre>
 Then you can test munge. To test Munge, we can try to access another node with Munge from our server node.
 <pre>munge -n
 munge -n | unmunge
-munge -n | ssh 3.buhpc.com unmunge
+munge -n | ssh compute-2 unmunge
 remunge</pre>
 If you encounter no errors, then Munge is working as expected.\
-The MUNGE daemon, munged, must also be started before Slurm daemons.\
 Make sure the MUNGE daemon, munged is started before you start the Slurm daemons.\
 
 
-Install Slurm
+# Install Slurm - this uses a shared folder
 Slurm has a few dependencies that we need to install before proceeding.
 
 <pre>yum install openssl openssl-devel pam-devel numactl numactl-devel hwloc hwloc-devel lua lua-devel readline-devel rrdtool-devel ncurses-devel man2html libibmad libibumad -y</pre>
-Now, we download the latest version of Slurm preferably in our shared folder. The latest version of Slurm may be different from our version.
-<pre>
-cd /nfs
+Now, we download the latest version of Slurm preferably in a shared folder. The latest version of Slurm may be different from our version.
+<pre>cd /nfs
 wget http://www.schedmd.com/download/latest/slurm-15.08.9.tar.bz2</pre>
-
-
-
 To build RPMs directly, copy the distributed tarball into a directory and execute (substituting the appropriate Slurm version number). If you don’t have rpmbuild yet:
-<pre>yum install rpm-build
-rpmbuild -ta slurm-19.05.1.tar.bz2</pre>
+<pre>yum install rpm-build</pre>
+Then build the RPMs.
+<pre>rpmbuild -ta slurm-19.05.1.tar.bz2</pre>
 The rpm files will be installed under the $(HOME)/rpmbuild directory of the user building them. For example, for root user:
 <pre>cd /root/rpmbuild/RPMS/x86_64</pre>
-Now, we will move the Slurm rpms for installation for the server and computer nodes.
+Now, we will move the Slurm rpms for installation on the master and computer nodes.
 <pre>mkdir /nfs/slurm-rpms
 cp slurm-15.08.9-1.el7.centos.x86_64.rpm slurm-devel-15.08.9-1.el7.centos.x86_64.rpm slurm-munge-15.08.9-1.el7.centos.x86_64.rpm slurm-perlapi-15.08.9-1.el7.centos.x86_64.rpm slurm-plugins-15.08.9-1.el7.centos.x86_64.rpm slurm-sjobexit-15.08.9-1.el7.centos.x86_64.rpm slurm-sjstat-15.08.9-1.el7.centos.x86_64.rpm slurm-torque-15.08.9-1.el7.centos.x86_64.rpm /nfs/slurm-rpms</pre>
-On every node that you want to be a server and compute node, we install those rpms. In our case, I want every node to be a compute node.
+If you dont have a shared folder scp into the compute nodes:
+<pre>cd /root/rpmbuild/RPMS/x86_64</pre>
+<pre>scp * root@compute-1:~/
+scp * root@compute-2:~/
+.
+.
+scp * root@compute-n:~/</pre>
+On every node that you want to be a master and compute node, we install those rpms. In our case, I want every node to be a compute node.
 <pre>yum --nogpgcheck localinstall slurm-15.08.9-1.el7.centos.x86_64.rpm slurm-devel-15.08.9-1.el7.centos.x86_64.rpm slurm-munge-15.08.9-1.el7.centos.x86_64.rpm slurm-perlapi-15.08.9-1.el7.centos.x86_64.rpm slurm-plugins-15.08.9-1.el7.centos.x86_64.rpm slurm-sjobexit-15.08.9-1.el7.centos.x86_64.rpm slurm-sjstat-15.08.9-1.el7.centos.x86_64.rpm slurm-torque-15.08.9-1.el7.centos.x86_64.rpm</pre>
 After we have installed Slurm on every machine, we will configure Slurm properly.\
 
-## slurm.conf
+## slurm.conf - INCOMPLETE
 
 Build a configuration file using your favorite web browser and doc/html/configurator.html or alternatively http://slurm.schedmd.com/configurator.easy.html\
 OR\
 Visit http://slurm.schedmd.com/configurator.html to make a configuration file for Slurm.
-It is mandatory that slurm.conf is identical on all nodes!
+It is mandatory that slurm.conf is *identical on all nodes*
 For example, you can leave everything default except:
 
 <pre>ControlMachine: server
@@ -134,19 +148,34 @@ SlurmdLogFile: /var/log/slurmd.log
 ClusterName: examplecluster</pre>
 
 After you hit Submit on the form, you will be given the full Slurm configuration file to copy.\
-On the server node:
+On the master node:
 <pre>cd /etc/slurm
 vim slurm.conf</pre>
 Copy the form’s Slurm configuration file that was created from the website and paste it into slurm.conf.\
 
 Install the configuration file in <sysconfdir>/slurm.conf. Or save the resulting output to /etc/slurm/slurm.conf, or the default location in /usr/local/etc/slurm.conf.\
 
-Now that the server node has the slurm.conf correctly, we need to send this file to the other compute nodes.
+Now that the master node has the slurm.conf correctly, we need to send this file to the other compute nodes.
 <pre>scp slurm.conf root@compute-1:/etc/slurm/slurm.conf
 scp slurm.conf root@compute-2:/etc/slurm/slurm.conf
 .
 .
 scp slurm.conf root@compute-n:/etc/slurm/slurm.conf</pre>
+
+Now we need to configure the spool and log directories. On the master node:
+<pre>mkdir /var/spool/slurmctld
+chown slurm: /var/spool/slurmctld
+chmod 755 /var/spool/slurmctld
+touch /var/log/slurmctld.log
+chown slurm: /var/log/slurmctld.log
+touch /var/log/slurm_jobacct.log /var/log/slurm_jobcomp.log
+chown slurm: /var/log/slurm_jobacct.log /var/log/slurm_jobcomp.log</pre>
+On the compute nodes:
+<pre>mkdir /var/spool/slurmd
+chown slurm: /var/spool/slurmd
+chmod 755 /var/spool/slurmd
+touch /var/log/slurmd.log
+chown slurm: /var/log/slurmd.log</pre>
 
 The parent directories for Slurm's log files, process ID files, state save directories, etc. are not created by Slurm. They must be created and made writable by SlurmUser as needed prior to starting Slurm daemons.\
 
