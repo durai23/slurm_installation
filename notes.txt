@@ -1,0 +1,64 @@
+# goal
+write playbook such that will be able to add instances later and then re-run.
+re-run should not affect older instances on which tasks were already run.
+it should make changes only on newly created instances.
+
+# brief overview of steps
+install mariadb on master node
+create users on master and compute nodes
+install munge on master and compute nodes
+generate key on master node
+copy keys to all compute nodes
+install slurm dependencies on master and compute nodes
+download slurm rpm on master nodes
+copy rpm files to all compute nodes
+install slurm on all nodes
+configure slurm.conf on master node
+cppy slurm.conf to all compute nodes
+create and change ownership of spool and log folders on master node
+create and change ownership of spool and log folders on all compute nodes
+
+
+
+
+
+
+
+/etc/passwd has  the users
+/etc/group has the groups
+
+/etc/init.d/<service> can be used to start services
+For example 
+/etc/init.d/munge start
+
+Ben says DO NOT write stuff into /etc/ instead create folder /home/centos/ansible-slurm and do all your stuff there for example /home/centos/ansible-slurm/munge/munge.key
+
+MUNGE ERROR only on compute:
+says keyfile should not be readable or writeable for group or world. but no errors on master (even though keyfile is readable on master to group and world)
+
+systemctl commands to enable need to be sudo
+
+
+Source pages and notes:
+
+[1] https://www.slothparadise.com/how-to-install-slurm-on-centos-7-cluster/
+[2] https://twiki.cern.ch/twiki/bin/view/Main/InstallingCentOS7LocalSite#Slurm_Installation
+[3] http://wiki.sc3.uis.edu.co/index.php/Slurm_Installation_on_Debian
+[4] https://innuendo.readthedocs.io/en/latest/installation/slurm.html
+[5] https://medium.com/@bankz.sukonvijit/%E0%B8%95%E0%B8%B4%E0%B8%94%E0%B8%95%E0%B8%B1%E0%B9%89%E0%B8%87-slurm-%E0%B9%81%E0%B8%9A%E0%B8%9A%E0%B9%80%E0%B8%94%E0%B9%87%E0%B8%81%E0%B8%88%E0%B8%9A%E0%B9%83%E0%B8%AB%E0%B8%A1%E0%B9%88-ce4dd2885a55
+[6] https://www.strike3d.it/index.php/en/2018/11/06/slurm-on-centos-6/
+[7] https://jetatar.github.io/ElasticCloud.html
+
+
+
+1 and 2 are basically the same except they use different node names.
+systemctl command has enable/disable/status/start/stop options
+3 - compare the database setup with volker's guide.
+3 uses init.d way instead of systemctl start
+4 has some init.d way. Also has slurm.conf with different parameters for learning purpose.
+5 has the location of the slurmdbd.conf.example file
+6 
+7 - compare the database setup with volker's guide. Also firewall and clock.
+
+
+1) If yo compare 1 and 2 you will get an idea how to fill slurm.conf. Because these two sources use different cluster names so that will be different in the slurm.conf that they present.

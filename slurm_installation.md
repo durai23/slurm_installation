@@ -49,7 +49,7 @@ useradd  -m -c "MUNGE Uid 'N' Gid Emporium" -d /var/lib/munge -u $MUNGEUSER -g m
 export SLURMUSER=992
 groupadd -g $SLURMUSER slurm
 useradd  -m -c "SLURM workload manager" -d /var/lib/slurm -u $SLURMUSER -g slurm  -s /bin/bash slurm</pre>
-and make sure that these same users are created identically on all nodes. This must be done prior to installing RPMs (which would create random UID/GID pairs if these users don't exist).\
+Make sure that these same users are created identically on all nodes. This must be done prior to installing RPMs (which would create random UID/GID pairs if these users don't exist).
 
 We recommend that you create a Unix user slurm for use by slurmctld. This user name will also be specified using the SlurmUser in the slurm.conf configuration file. This user must exist on all nodes of the cluster. Note that files and directories used by slurmctld will need to be readable or writable by the user SlurmUser (the Slurm configuration files must be readable; the log file directory and state save directory must be writable).
 
@@ -103,8 +103,8 @@ To build RPMs directly, copy the distributed tarball into a directory and execut
 <pre>yum install rpm-build</pre>
 Then build the RPMs.
 <pre>rpmbuild -ta slurm-19.05.1.tar.bz2</pre>
-The rpm files will be installed under the $(HOME)/rpmbuild directory of the user building them. For example, for root user:
-<pre>cd /root/rpmbuild/RPMS/x86_64</pre>
+The rpm files will be installed under the $(HOME)/rpmbuild directory of the user building them. For example, for the default user:
+<pre>cd /home/centos/rpmbuild/RPMS/x86_64</pre>
 Now, we will move the Slurm rpms for installation on the master and computer nodes.
 <pre>mkdir /nfs/slurm-rpms
 cp slurm-15.08.9-1.el7.centos.x86_64.rpm slurm-devel-15.08.9-1.el7.centos.x86_64.rpm slurm-munge-15.08.9-1.el7.centos.x86_64.rpm slurm-perlapi-15.08.9-1.el7.centos.x86_64.rpm slurm-plugins-15.08.9-1.el7.centos.x86_64.rpm slurm-sjobexit-15.08.9-1.el7.centos.x86_64.rpm slurm-sjstat-15.08.9-1.el7.centos.x86_64.rpm slurm-torque-15.08.9-1.el7.centos.x86_64.rpm /nfs/slurm-rpms</pre>
@@ -140,8 +140,8 @@ After you hit Submit on the form, you will be given the full Slurm configuration
 On the master node:
 <pre>cd /etc/slurm
 vim slurm.conf</pre>
-Copy the form’s Slurm configuration file that was created from the website and paste it into slurm.conf.
-
+Copy the form’s Slurm configuration file that was created from the website and paste it into slurm.conf.\
+Executing the command slurmd -C on each compute node will print its physical configuration (sockets, cores, real memory size, etc.), which can be used in constructing the slurm.conf file.\
 Install the configuration file in <sysconfdir>/slurm.conf. Or save the resulting output to /etc/slurm/slurm.conf, or the default location in /usr/local/etc/slurm.conf.
 
 Now that the master node has the slurm.conf correctly, we need to send this file to the other compute nodes.
@@ -151,7 +151,7 @@ scp slurm.conf root@compute-2:/etc/slurm/slurm.conf
 .
 scp slurm.conf root@compute-n:/etc/slurm/slurm.conf</pre>
 
-Now we need to configure the spool and log directories. On the master node:
+Now, according to the settings in the slurm.conf file we need to configure the spool and log directories. On the master node:
 <pre>mkdir /var/spool/slurmctld
 chown slurm: /var/spool/slurmctld
 chmod 755 /var/spool/slurmctld
