@@ -1,6 +1,10 @@
 # SLURM installation steps
 
 * [Prerequisites](#Prerequisites)
+  - [Delete failed installation](#delete-failed-installation-of-slurm)
+  - [Clock](#clock)
+  - [Install MariaDB](#install-MariaDB)
+  - [Users](#users)
 * [Install Munge](#install-munge)
 * [Install Slurm](#install-slurm)
 
