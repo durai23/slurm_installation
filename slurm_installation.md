@@ -10,6 +10,8 @@
   - [Test Munge](#test-munge)
 * [Install Slurm](#install-slurm)
 * [Configuration](#configuration)
+  - [slurm.conf](#slurm.conf) 	
+  - [Slurm Accounting](#slurm-accounting)
 * [Start Services](#start-services)
 * [Use Slurm](#use-slurm)
 
@@ -192,8 +194,8 @@ mysql> quit;</pre>
 
 Once the above steps are complete start the required services:
 
-systemctl start slurmd (compute nodes)
-systemctl start slurmdbd (master node)
+systemctl start slurmd (compute nodes)\
+systemctl start slurmdbd (master node)\
 systemctl start slurmctld (master node)
 
 # Use slurm
