@@ -6,7 +6,12 @@
   - [Install MariaDB](#install-MariaDB)
   - [Users](#users)
 * [Install Munge](#install-munge)
+  - [Installation](#installation)
+  - [Test Munge](#test-munge)
 * [Install Slurm](#install-slurm)
+* [Configuration](#configuration)
+* [Start Services](#start-services)
+* [Use Slurm](#use-slurm)
 
 # Prerequisites
 
@@ -62,8 +67,8 @@ We recommend that you create a Unix user slurm for use by slurmctld. This user n
 
 Set up passwordless ssh between controller and compute nodes.
 
-## Install Munge
-
+# Install Munge
+## Installation
 If you are using CentOS 7, get the latest EPEL repository.
 
 <pre>yum install epel-release</pre>
@@ -86,8 +91,10 @@ scp /etc/munge/munge.key root@compute-n:/etc/munge</pre>
 Now, we SSH into *every node* and correct the permissions as well as start the Munge service. Chown munge key to user munge. Chmod munge key to 0700.
 <pre>chown -R munge: /etc/munge/ /var/log/munge/
 chmod 0700 /etc/munge/ /var/log/munge/</pre>
+Start the Munge service on all nodes.
 <pre>systemctl enable munge
 systemctl start munge</pre>
+## Test Munge
 Then you can test munge. To test Munge, we can try to access another node with Munge from our server node.
 <pre>munge -n
 munge -n | unmunge
@@ -128,8 +135,8 @@ On the compute nodes:
 <pre>yum --nogpgcheck localinstall slurm-slurmd-19.05.4-1.el7.x86_64.rpm</pre>
 
 After we have installed Slurm on every machine, we will configure Slurm properly.
-
-## slurm.conf - INCOMPLETE
+# Configuration
+## slurm.conf
 
 Build a configuration file using your favorite web browser and doc/html/configurator.html or alternatively visit http://slurm.schedmd.com/configurator.html to make a configuration file for Slurm.
 It is mandatory that slurm.conf is *identical on all nodes*
@@ -181,7 +188,7 @@ mysql> grant all on slurm_acct_db.* TO 'slurm'@'localhost' identified by '[passw
 mysql> create database slurm_acct_db;
 mysql> quit;</pre>
 
-## Start services
+# Start services
 
 Once the above steps are complete start the required services:
 
@@ -189,7 +196,7 @@ systemctl start slurmd (compute nodes)
 systemctl start slurmdbd (master node)
 systemctl start slurmctld (master node)
 
-## Use slurm
+# Use slurm
 
 To display the compute nodes:
 
