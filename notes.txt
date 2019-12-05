@@ -18,11 +18,57 @@ cppy slurm.conf to all compute nodes
 create and change ownership of spool and log folders on master node
 create and change ownership of spool and log folders on all compute nodes
 
+SLURM.CONF sources
+
+slothparadise
+ControlMachine: buhpc3
+ControlAddr: 128.197.116.18
+NodeName: buhpc[1-6]
+CPUs: 4
+StateSaveLocation: /var/spool/slurmctld
+SlurmctldLogFile: /var/log/slurmctld.log
+SlurmdLogFile: /var/log/slurmd.log
+ClusterName: buhpc
+
+additionally, from figure
 
 
+STOP ANSIBLE DO MANUAL
+at the slurm.conf stage I went manual. These are the steps I performed manually
+slurm.conf editing and copying to all nodes
+slurmdbd.conf editing (set default password as some_pass)
+mariadb setup (set default password as some_pass)
+	sudo systemctl enable/start mariadb
+	run sudo mysql_secure_installation to set up root password for mysql
+	sudo mysql -p and the ensuing commands from manual(s)
 
+RETURN TO ANSIBLE
+mkdir,touch adn chown commands - btw these are identical in slothparadise and the thai manual and even in yet another manual!
 
+this was the error when attempting to start slumctld 
+Nov 25 18:29:25 da-slurm0.novalocal systemd[1]: Starting Slurm controller daemon...
+Nov 25 18:29:25 da-slurm0.novalocal systemd[1]: Can't open PID file /var/run/slurmctld.pid (yet?) after start: No such file or directory
 
+checked and found no file called slurmctld.pid in /var/run. so decided to sudo touch create one manually
+
+above did not fix it. found in systemctl status slurmdbd:
+Nov 25 15:32:16 da-slurm0.novalocal slurmdbd[10584]: (null): _log_init: Unable to open logfile `/var/log/slurm/slurmdbd.log': No such file or directory
+
+so now will touch /var/log/slurmdbd.log and then make the same entry in slurmdbd.conf and restart slurmdbd
+
+another thing to note is that the "chown slurm: /...." command turns both user and group to slurm but when you do it in ansible by setting owner ONLY then user turns to slurm but group remains root
+
+changing accountingstoragehost in slurm.conf to default just =<blank> on da_slurm0
+
+above fixed the problem
+need to copy this new slurm.conf to da_slurm1
+
+services that need to be active before slurmctld on master node
+ mariadb
+ munge
+ slurmdbd
+
+NodeAddr has to be added to the slurm.conf if the hosts are not specified in the /etc/hosts file. if they are listed in /etc/hosts then no need to specify NodeAddr in slurm.conf
 
 /etc/passwd has  the users
 /etc/group has the groups
